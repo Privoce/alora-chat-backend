@@ -81,6 +81,7 @@ module.exports = (app) => {
 
 							if (user) {
 								socket.join(`${_id}`);
+								socket.user_id = _id;
 							} else {
 								socket.emit("login-error");
 							}
@@ -93,14 +94,13 @@ module.exports = (app) => {
 		});
 
 		socket.on("request", (params) => {
+			socket.inCallWith = params.to;
 			global.io.to(params.to).emit("videocall.calling", {
 				...params,
 			});
 		});
 
 		socket.on("call", (params) => {
-			console.log("emiti o call agr", params.to);
-
 			global.io.to(params.to).emit("call", {
 				...params,
 				// from: logedId, <-- ativar depois caso necessario
@@ -108,11 +108,14 @@ module.exports = (app) => {
 		});
 
 		socket.on("end", (params) => {
-			console.log("ouvi end", params);
-			global.io.to(params.to).emit("end");
+			global.io.to(params.to).emit("end", {
+				to: params.to,
+				timeout: params.timeout || false,
+			});
 		});
 
 		socket.once("disconnect", () => {
+			global.io.to(socket.inCallWith).emit("end");
 			logger.info("SOCKET.IO Server: Client disconnected");
 		});
 	});
