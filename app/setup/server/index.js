@@ -14,6 +14,7 @@ const constants = absoluteRequire("modules/constants");
 const expressRoutes = absoluteRequire("routes");
 
 module.exports = (app) => {
+	const userSocketIdMap = new Map();
 	const server = http.createServer(app);
 	const port =
 		process.env.PORT ||
@@ -82,6 +83,8 @@ module.exports = (app) => {
 							if (user) {
 								socket.join(`${_id}`);
 								socket.user_id = _id;
+								socket.user_name = nickname;
+								addClientToMap(_id, socket.id);
 							} else {
 								socket.emit("login-error");
 							}
@@ -93,13 +96,19 @@ module.exports = (app) => {
 			);
 		});
 
+		//create call request
 		socket.on("request", (params) => {
+			if (socket.inCallWith && socket.inCallWith !== "") {
+				console.log("ja ligando", socket.inCallWith);
+				return;
+			}
 			socket.inCallWith = params.to;
 			global.io.to(params.to).emit("videocall.calling", {
 				...params,
 			});
 		});
 
+		// acept the call
 		socket.on("call", (params) => {
 			socket.inCallWith = params.to;
 			global.io.to(params.to).emit("call", {
@@ -115,12 +124,49 @@ module.exports = (app) => {
 			});
 		});
 
+		socket.on("isOnline", (params) => {
+			console.log("asdadsa");
+			if (userSocketIdMap.has(params.userId)) {
+				socket.emit("isOnline", {
+					status: "online",
+				});
+			} else {
+				socket.emit("isOnline", {
+					status: "offline",
+				});
+			}
+		});
+
 		socket.once("disconnect", () => {
-			console.log("in call with", socket.inCallWith);
 			global.io.to(socket.inCallWith).emit("end");
+			socket.inCallWith = "";
+			removeClientFromMap(socket.user_id, socket.id);
 			logger.info("SOCKET.IO Server: Client disconnected");
 		});
 	});
+
+	function addClientToMap(userId, socketId) {
+		if (!userSocketIdMap.has(userId)) {
+			//when user is joining first time
+			userSocketIdMap.set(userId, new Set([socketId]));
+		} else {
+			//user had already joined from one client and now joining using another client;
+			userSocketIdMap.get(userId).add(socketId);
+		}
+
+		console.log(userSocketIdMap);
+	}
+
+	function removeClientFromMap(userId, socketID) {
+		if (userSocketIdMap.has(userId)) {
+			let userSocketIdSet = userSocketIdMap.get(userId);
+			userSocketIdSet.delete(socketID);
+			//if there are no clients for a user, remove that user from online list(map);
+			if (userSocketIdSet.size == 0) {
+				userSocketIdMap.delete(userId);
+			}
+		}
+	}
 
 	return server;
 };
