@@ -101,6 +101,7 @@ module.exports = (app) => {
 		});
 
 		socket.on("call", (params) => {
+			socket.inCallWith = params.to;
 			global.io.to(params.to).emit("call", {
 				...params,
 				// from: logedId, <-- ativar depois caso necessario
@@ -115,6 +116,7 @@ module.exports = (app) => {
 		});
 
 		socket.once("disconnect", () => {
+			console.log("in call with", socket.inCallWith);
 			global.io.to(socket.inCallWith).emit("end");
 			logger.info("SOCKET.IO Server: Client disconnected");
 		});
