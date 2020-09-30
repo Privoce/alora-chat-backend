@@ -138,7 +138,6 @@ module.exports = (app) => {
 		socket.on("end", (params) => {
 			removeClientFromMap(params.to, params.to, "inCall");
 			removeClientFromMap(socket.user_id, socket.id, "inCall");
-			console.log("em call", usersInCall);
 			global.io.to(params.to).emit("end", {
 				to: params.to,
 				timeout: params.timeout || false,
@@ -155,6 +154,14 @@ module.exports = (app) => {
 					status: "offline",
 				});
 			}
+		});
+
+		// when enable or disable video
+		socket.on("toggle-video", (params) => {
+			console.log(params, "aqui toggle", socket.inCallWith);
+			global.io.to(socket.inCallWith).emit("toggle-video", {
+				...params,
+			});
 		});
 
 		socket.once("disconnect", () => {
