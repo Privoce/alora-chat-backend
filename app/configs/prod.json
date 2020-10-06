@@ -7,6 +7,7 @@
 		"WHITELIST": [
 			"http://chat.privoce.com",
 			"https://chat.privoce.com",
+			"https://alora-chat-frontend.vercel.app",
 			"http://localhost:3000"
 		]
 	},
