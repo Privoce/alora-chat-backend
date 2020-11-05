@@ -18,14 +18,10 @@ module.exports = (app) => {
 	const usersInCall = new Map(); // it can be stored on mongoDb too, but...
 	const server = http.createServer(app);
 	const port =
-		process.env.PORT ||
-		process.env.OPENSHIFT_NODEJS_PORT ||
-		constants.GENERAL.SERVER_HTTP_PORT;
+		process.env.SERVER_HTTP_PORT || process.env.OPENSHIFT_NODEJS_PORT;
 
 	const httpId =
-		process.env.IP ||
-		process.env.OPENSHIFT_NODEJS_IP ||
-		constants.GENERAL.SERVER_HTTP_IP;
+		process.env.SERVER_HTTP_IP || process.env.OPENSHIFT_NODEJS_IP;
 
 	const corsOptions = {
 		origin: (origin, callback) => {
@@ -67,7 +63,7 @@ module.exports = (app) => {
 
 			jwt.verify(
 				token,
-				constants.GENERAL.JWT_SECRET,
+				process.env.JWT_SECRET,
 				async (err, decodedData) => {
 					if (err) {
 						logger.error("SOCKET.IO Server: Invalid login token");

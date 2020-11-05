@@ -1,40 +1,37 @@
-const {
-	findOneUser
-} = absoluteRequire('repositories/user');
+const { findOneUser } = absoluteRequire("repositories/user");
 
-const jwt = require('jsonwebtoken');
-const constants = absoluteRequire('modules/constants');
+const jwt = require("jsonwebtoken");
+const constants = absoluteRequire("modules/constants");
 
 module.exports = (req, res, next) => {
-	const token = (
-		req.get('x-access-token')
-		|| req.body['x-access-token']
-		|| req.query['x-access-token']
-		|| req.headers['x-access-token']
-		|| null
-	);
+	const token =
+		req.get("x-access-token") ||
+		req.body["x-access-token"] ||
+		req.query["x-access-token"] ||
+		req.headers["x-access-token"] ||
+		null;
 
-	jwt.verify(token, constants.GENERAL.JWT_SECRET, async (err, decodedData) => {
+	jwt.verify(token, process.env.JWT_SECRET, async (err, decodedData) => {
 		if (err) {
-			res.status(401)
-				.json({
-					success: false,
-					errors: {},
-					result: []
-				});
+			res.status(401).json({
+				success: false,
+				errors: {},
+				result: [],
+			});
 		} else {
-			const {
-				nickname,
-			} = decodedData;
+			const { nickname } = decodedData;
 
 			try {
-				const user = await findOneUser({
-					nickname
-				}, {
-					password: 0,
-					contacts: 0,
-					conversations: 0
-				});
+				const user = await findOneUser(
+					{
+						nickname,
+					},
+					{
+						password: 0,
+						contacts: 0,
+						conversations: 0,
+					}
+				);
 
 				if (user) {
 					req.currentUser = user;
@@ -43,16 +40,15 @@ module.exports = (req, res, next) => {
 					res.status(401).json({
 						success: false,
 						errors: {},
-						result: []
+						result: [],
 					});
 				}
 			} catch (e) {
-				res.status(500)
-					.json({
-						success: false,
-						errors: {},
-						result: []
-					});
+				res.status(500).json({
+					success: false,
+					errors: {},
+					result: [],
+				});
 			}
 		}
 	});

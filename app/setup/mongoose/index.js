@@ -4,7 +4,7 @@ const constants = absoluteRequire("modules/constants");
 const logger = absoluteRequire("modules/winston");
 
 module.exports = () => {
-	const URI = constants.MONGOOSE.URL + constants.MONGOOSE.DB;
+	const URI = process.env.MONGOOSE_URL;
 
 	const MONGOOSE_OPTIONS = {
 		useNewUrlParser: true,
