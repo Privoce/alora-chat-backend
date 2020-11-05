@@ -17,8 +17,7 @@ module.exports = (app) => {
 	const userSocketIdMap = new Map();
 	const usersInCall = new Map(); // it can be stored on mongoDb too, but...
 	const server = http.createServer(app);
-	const port =
-		process.env.SERVER_HTTP_PORT || process.env.OPENSHIFT_NODEJS_PORT;
+	const port = process.env.PORT || process.env.SERVER_HTTP_PORT;
 
 	const httpId =
 		process.env.SERVER_HTTP_IP || process.env.OPENSHIFT_NODEJS_IP;
