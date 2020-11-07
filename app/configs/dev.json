@@ -1,6 +1,6 @@
 {
 	"GENERAL": {
-		"WHITELIST": ["http://localhost:3000", "http://10.0.0.105:3000"]
+		"WHITELIST": ["http://localhost:3000", "https://papo.privoce.com"]
 	},
 	"ENDPOINTS": {
 		"AUTH": {

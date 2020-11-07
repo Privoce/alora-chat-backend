@@ -1,11 +1,6 @@
 {
 	"GENERAL": {
-		"WHITELIST": [
-			"http://chat.privoce.com",
-			"https://chat.privoce.com",
-			"https://papo.privoce.com",
-			"http://localhost:3000"
-		]
+		"WHITELIST": ["https://papo.privoce.com", "http://localhost:3000"]
 	},
 	"EXPRESS_VALIDATION_MESSAGES": {
 		"NICKNAME_LENGHT_BETWEEN_2_AND_12": "The Nickname must have between 2 and 12 characters",
