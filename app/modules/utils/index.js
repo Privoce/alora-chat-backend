@@ -5,9 +5,9 @@ const constants = absoluteRequire("modules/constants");
 
 exports.encryptPassword = (password) =>
 	crypto
-		.createHmac(constants.CRYPTO.HASH, constants.CRYPTO.SECRET)
+		.createHmac(process.env.HASH, process.env.SECRET)
 		.update(password)
-		.digest(constants.CRYPTO.DIGEST);
+		.digest(process.env.DIGEST);
 
 exports.createJwtToken = (model) =>
 	jwt.sign(model, process.env.JWT_SECRET, {
