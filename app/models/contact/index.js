@@ -1,18 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const {
-	Schema
-} = mongoose;
+const { Schema } = mongoose;
 
-const {
-	ObjectId
-} = Schema.Types;
+const { ObjectId } = Schema.Types;
 
 const ContactSchema = new Schema({
 	contactUserId: {
 		type: ObjectId,
-		required: true
-	}
+		required: true,
+	},
 });
 
 exports.ContactSchema = ContactSchema;

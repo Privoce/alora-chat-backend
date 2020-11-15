@@ -68,18 +68,18 @@ module.exports = (app) => {
 						logger.error("SOCKET.IO Server: Invalid login token");
 						socket.emit("login-error");
 					} else {
-						const { nickname, _id } = decodedData;
+						const { email, _id } = decodedData;
 
 						try {
 							const user = await findOneUser({
-								nickname,
+								email,
 								_id,
 							});
 
 							if (user) {
 								socket.join(`${_id}`);
 								socket.user_id = _id;
-								socket.user_name = nickname;
+								socket.email = email;
 								console.log("original", _id);
 								addClientToMap(_id, socket.id, "online");
 							} else {
