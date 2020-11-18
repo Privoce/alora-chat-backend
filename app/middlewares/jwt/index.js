@@ -9,7 +9,10 @@ module.exports = (req, res, next) => {
 		req.body["x-access-token"] ||
 		req.query["x-access-token"] ||
 		req.headers["x-access-token"] ||
+		req.headers["authorization"].split(" ")[1] ||
 		null;
+
+	console.log(token);
 
 	jwt.verify(token, process.env.JWT_SECRET, async (err, decodedData) => {
 		if (err) {
@@ -19,12 +22,12 @@ module.exports = (req, res, next) => {
 				result: [],
 			});
 		} else {
-			const { nickname } = decodedData;
+			const { email } = decodedData;
 
 			try {
 				const user = await findOneUser(
 					{
-						nickname,
+						email,
 					},
 					{
 						password: 0,
