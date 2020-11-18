@@ -2,108 +2,93 @@ const {
 	getConversations,
 	findOneConversationAndUpdate,
 	findOneConversationAndDelete,
-	getConversation
-} = absoluteRequire('repositories/conversation');
+	getConversation,
+} = absoluteRequire("repositories/conversation");
 
-const {
-	deleteMessages
-} = absoluteRequire('repositories/message');
+const { deleteMessages } = absoluteRequire("repositories/message");
 
-const _ = require('lodash');
+const _ = require("lodash");
 
 exports.getConversations = async (req, res) => {
+	console.log("asd", req.currentUser);
 	try {
-		const {
-			_id: ownerId
-		} = req.currentUser;
+		const { _id: ownerId } = req.currentUser;
 
 		const result = await getConversations({
-			ownerId
+			ownerId,
 		});
 
-		res.status(200)
-			.json({
-				success: true,
-				result
-			});
+		res.status(200).json({
+			success: true,
+			result,
+		});
 	} catch (e) {
-		res.status(500)
-			.json({
-				success: false
-			});
+		res.status(500).json({
+			success: false,
+		});
 	}
 };
 
 exports.updateConversation = async (req, res) => {
 	try {
-		const {
-			partnerId,
+		const { partnerId, conversation } = req.body;
+
+		const { _id: ownerId } = req.currentUser;
+
+		await findOneConversationAndUpdate(
+			{
+				ownerId,
+				partnerId,
+			},
 			conversation
-		} = req.body;
+		);
 
-		const {
-			_id: ownerId
-		} = req.currentUser;
-
-		await findOneConversationAndUpdate({
-			ownerId,
-			partnerId
-		}, conversation);
-
-		res.status(200)
-			.json({
-				success: true
-			});
+		res.status(200).json({
+			success: true,
+		});
 	} catch (e) {
-		res.status(500)
-			.json({
-				success: false
-			});
+		res.status(500).json({
+			success: false,
+		});
 	}
 };
 
 exports.deleteConversation = async (req, res) => {
 	try {
-		const {
-			partnerId
-		} = req.body;
+		const { partnerId } = req.body;
 
-		const {
-			_id: ownerId
-		} = req.currentUser;
+		const { _id: ownerId } = req.currentUser;
 
 		const ownerConversation = await findOneConversationAndDelete({
 			partnerId,
-			ownerId
+			ownerId,
 		});
 
 		const partnerConversation = await getConversation({
 			partnerId: ownerId,
-			ownerId: partnerId
+			ownerId: partnerId,
 		});
 
-		const ownerMessages = ownerConversation ? ownerConversation.messages.map(
-			item => String(item._id)
-		) : [];
+		const ownerMessages = ownerConversation
+			? ownerConversation.messages.map((item) => String(item._id))
+			: [];
 
-		const partnerMessages = partnerConversation ? partnerConversation.messages.map(
-			item => String(item._id)
-		) : [];
+		const partnerMessages = partnerConversation
+			? partnerConversation.messages.map((item) => String(item._id))
+			: [];
 
 		await deleteMessages({
 			_id: {
-				$in: _.difference(ownerMessages, partnerMessages)
-			}
+				$in: _.difference(ownerMessages, partnerMessages),
+			},
 		});
 
-		res.status(200)
-			.json({
-				success: true
-			});
+		res.status(200).json({
+			success: true,
+		});
 	} catch (e) {
-		res.status(500)
-			.json({
-				success: false
-			});
+		res.status(500).json({
+			success: false,
+		});
 	}
 };

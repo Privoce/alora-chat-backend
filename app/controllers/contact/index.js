@@ -1,55 +1,47 @@
-const {
-	findUser,
-	findOneUser,
-	findOneUserByIdAndUpdate
-} = absoluteRequire('repositories/user');
+const { findUser, findOneUser, findOneUserByIdAndUpdate } = absoluteRequire(
+	"repositories/user"
+);
 
-const {
-	convertErrorToFrontFormat
-} = absoluteRequire('modules/utils');
+const { convertErrorToFrontFormat } = absoluteRequire("modules/utils");
 
-const _ = require('lodash');
+const _ = require("lodash");
 
 exports.getContact = async (req, res) => {
 	try {
-		const {
-			_id
-		} = req.currentUser;
+		const { _id } = req.currentUser;
 
-		const result = await findOneUser(
-			{
-				_id
-			}
-		);
+		const result = await findOneUser({
+			_id,
+		});
 
 		if (result) {
-			const users = await findUser({
-				_id: {
-					$in: result.contacts.map(item => item.contactUserId)
+			const users = await findUser(
+				{
+					_id: {
+						$in: result.contacts.map((item) => item.contactUserId),
+					},
+				},
+				{
+					password: false,
+					contacts: false,
 				}
-			}, {
-				password: false,
-				contacts: false
-			});
+			);
 
-			res.status(200)
-				.json({
-					success: true,
-					result: users
-				});
+			res.status(200).json({
+				success: true,
+				result: users,
+			});
 		} else {
-			res.status(500)
-				.json({
-					success: false,
-					errors: {}
-				});
+			res.status(500).json({
+				success: false,
+				errors: {},
+			});
 		}
 	} catch (e) {
-		res.status(500)
-			.json({
-				success: false,
-				errors: {}
-			});
+		res.status(500).json({
+			success: false,
+			errors: {},
+		});
 	}
 };
 
@@ -57,82 +49,71 @@ exports.postAddContact = async (req, res) => {
 	const validationResult = await req.getValidationResult();
 	const errors = convertErrorToFrontFormat(validationResult.mapped());
 
-	const {
-		nickname: contactUserNickname
-	} = req.body;
+	const { email: contactUserNickname } = req.body;
 
-	const {
-		_id: contactOwnerId
-	} = req.currentUser;
+	const { _id: contactOwnerId } = req.currentUser;
 
 	if (!_.isEmpty(errors)) {
-		res
-			.status(400)
-			.json({
-				success: false,
-				errors
-			});
+		res.status(400).json({
+			success: false,
+			errors,
+		});
 	} else {
 		try {
-			const contactUser = await findOneUser({
-				nickname: contactUserNickname
-			}, {
-				password: 0,
-				contacts: 0
-			});
+			const contactUser = await findOneUser(
+				{
+					email: contactUserNickname,
+				},
+				{
+					password: 0,
+					contacts: 0,
+				}
+			);
 
 			if (contactUser) {
 				await findOneUserByIdAndUpdate(contactOwnerId, {
 					$addToSet: {
 						contacts: {
-							contactUserId: contactUser._id
-						}
-					}
+							contactUserId: contactUser._id,
+						},
+					},
 				});
 			}
 
-			res.status(200)
-				.json({
-					success: true,
-					errors: {}
-				});
+			res.status(200).json({
+				success: true,
+				errors: {},
+			});
 		} catch (e) {
-			res.status(500)
-				.json({
-					success: false,
-					errors: {}
-				});
+			res.status(500).json({
+				success: false,
+				errors: {},
+			});
 		}
 	}
 };
 
 exports.deleteContact = async (req, res) => {
-	const {
-		contactId
-	} = req.body;
+	const { contactId } = req.body;
 
-	const {
-		_id
-	} = req.currentUser;
+	const { _id } = req.currentUser;
 
 	try {
 		await findOneUserByIdAndUpdate(_id, {
 			$pull: {
 				contacts: {
-					contactUserId: contactId
-				}
-			}
+					contactUserId: contactId,
+				},
+			},
 		});
 
-		res.status(200)
-			.json({
-				success: true
-			});
+		res.status(200).json({
+			success: true,
+		});
 	} catch (e) {
-		res.status(500)
-			.json({
-				success: false,
-				errors: {}
-			});
+		res.status(500).json({
+			success: false,
+			errors: {},
+		});
 	}
 };

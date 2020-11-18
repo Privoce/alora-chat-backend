@@ -1,6 +1,10 @@
 {
 	"GENERAL": {
-		"WHITELIST": ["http://localhost:3000", "https://papo.privoce.com"]
+		"WHITELIST": [
+			"http://localhost:3000",
+			"https://papo.privoce.com",
+			"http://localhost:3030"
+		]
 	},
 	"ENDPOINTS": {
 		"AUTH": {
@@ -13,12 +17,12 @@
 		"CONVERSATION": "/secured/conversation"
 	},
 	"EXPRESS_VALIDATION_MESSAGES": {
-		"NICKNAME_LENGHT_BETWEEN_2_AND_12": "The Nickname must have between 2 and 12 characters",
+		"NICKNAME_LENGHT_BETWEEN_2_AND_12": "The Email must have between 10 and 22 characters",
 		"PASSWORD_LENGHT_BETWEEN_5_AND_12": "The Password must have between 5 and 12 characters",
-		"THIS_NICKNAME_IS_ALREADY_TAKEN": "This Nickname is already taken",
-		"THIS_NICKNAME_IS_ALREADY_ADDED": "This Nickname is already added",
-		"THIS_NICKNAME_DO_NOT_EXISTS": "This Nickname doesn't exist",
-		"INCORRECT_PASSWORD_OR_USERNAME": "Incorrect nickname or password",
+		"THIS_NICKNAME_IS_ALREADY_TAKEN": "This Email is already taken",
+		"THIS_NICKNAME_IS_ALREADY_ADDED": "This Email is already added",
+		"THIS_NICKNAME_DO_NOT_EXISTS": "This Email doesn't exist",
+		"INCORRECT_PASSWORD_OR_USERNAME": "Incorrect email or password",
 		"YOU_CANT_ADD_YOURSELF": "You can't add yourself"
 	}
 }
