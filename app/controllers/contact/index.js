@@ -1,119 +1,183 @@
+const _ = require('lodash');
 const { findUser, findOneUser, findOneUserByIdAndUpdate } = absoluteRequire(
-	"repositories/user"
+  'repositories/user',
 );
+const { convertErrorToFrontFormat } = absoluteRequire('modules/utils');
 
-const { convertErrorToFrontFormat } = absoluteRequire("modules/utils");
+/**
+ * Get all loged user contacts
+ * @param {Object} req express request objetc
+ * @param {Object} res express response object
+ */
+async function getContact(req, res) {
+  try {
+    const { _id } = req.currentUser;
 
-const _ = require("lodash");
+    const result = await findOneUser({
+      _id,
+    });
 
-exports.getContact = async (req, res) => {
-	try {
-		const { _id } = req.currentUser;
+    if (result) {
+      const users = await findUser(
+        {
+          _id: {
+            $in: result.contacts.map(item => item.contactUserId),
+          },
+        },
+        {
+          password: false,
+          contacts: false,
+        },
+      );
 
-		const result = await findOneUser({
-			_id,
-		});
+      res.status(200).json({
+        success: true,
+        result: users,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        errors: {},
+      });
+    }
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      errors: {},
+    });
+  }
+}
 
-		if (result) {
-			const users = await findUser(
-				{
-					_id: {
-						$in: result.contacts.map((item) => item.contactUserId),
-					},
-				},
-				{
-					password: false,
-					contacts: false,
-				}
-			);
+/**
+ * Check if contact is on loged user contacts list
+ * @param {Object} req express request objetc
+ * @param {Object} res express response object
+ */
+async function onContactList(req, res) {
+  try {
+    const { _id } = req.currentUser;
+    const { contactId } = req.params;
 
-			res.status(200).json({
-				success: true,
-				result: users,
-			});
-		} else {
-			res.status(500).json({
-				success: false,
-				errors: {},
-			});
-		}
-	} catch (e) {
-		res.status(500).json({
-			success: false,
-			errors: {},
-		});
-	}
-};
+    const result = await findOneUser({
+      _id,
+    });
 
-exports.postAddContact = async (req, res) => {
-	const validationResult = await req.getValidationResult();
-	const errors = convertErrorToFrontFormat(validationResult.mapped());
+    if (result) {
+      if (
+        result.contacts.find(
+          userContacts => userContacts.contactUserId.toString() === contactId,
+        )
+      ) {
+        res.status(200).json({
+          success: true,
+          result: true,
+        });
+      } else {
+        res.status(200).json({
+          success: false,
+          result: false,
+        });
+      }
+    } else {
+      res.status(500).json({
+        success: false,
+        errors: {},
+      });
+    }
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      errors: {},
+    });
+  }
+}
 
-	const { email: contactUserNickname } = req.body;
+/**
+ * Add new contact to loged user
+ * @param {Object} req express request objetc
+ * @param {Object} res express response object
+ */
+async function postAddContact(req, res) {
+  const validationResult = await req.getValidationResult();
+  const errors = convertErrorToFrontFormat(validationResult.mapped());
 
-	const { _id: contactOwnerId } = req.currentUser;
+  const { email: contactUserNickname } = req.body;
 
-	if (!_.isEmpty(errors)) {
-		res.status(400).json({
-			success: false,
-			errors,
-		});
-	} else {
-		try {
-			const contactUser = await findOneUser(
-				{
-					email: contactUserNickname,
-				},
-				{
-					password: 0,
-					contacts: 0,
-				}
-			);
+  const { _id: contactOwnerId } = req.currentUser;
 
-			if (contactUser) {
-				await findOneUserByIdAndUpdate(contactOwnerId, {
-					$addToSet: {
-						contacts: {
-							contactUserId: contactUser._id,
-						},
-					},
-				});
-			}
+  if (!_.isEmpty(errors)) {
+    res.status(400).json({
+      success: false,
+      errors,
+    });
+  } else {
+    try {
+      const contactUser = await findOneUser(
+        {
+          email: contactUserNickname,
+        },
+        {
+          password: 0,
+          contacts: 0,
+        },
+      );
 
-			res.status(200).json({
-				success: true,
-				errors: {},
-			});
-		} catch (e) {
-			res.status(500).json({
-				success: false,
-				errors: {},
-			});
-		}
-	}
-};
+      if (contactUser) {
+        await findOneUserByIdAndUpdate(contactOwnerId, {
+          $addToSet: {
+            contacts: {
+              contactUserId: contactUser._id,
+            },
+          },
+        });
+      }
 
-exports.deleteContact = async (req, res) => {
-	const { contactId } = req.body;
+      res.status(200).json({
+        success: true,
+        errors: {},
+      });
+    } catch (e) {
+      res.status(500).json({
+        success: false,
+        errors: {},
+      });
+    }
+  }
+}
 
-	const { _id } = req.currentUser;
+/**
+ * Delete loged user contacts
+ * @param {Object} req express request objetc
+ * @param {Object} res express response object
+ */
+async function deleteContact(req, res) {
+  const { contactId } = req.body;
 
-	try {
-		await findOneUserByIdAndUpdate(_id, {
-			$pull: {
-				contacts: {
-					contactUserId: contactId,
-				},
-			},
-		});
+  const { _id } = req.currentUser;
 
-		res.status(200).json({
-			success: true,
-		});
-	} catch (e) {
-		res.status(500).json({
-			success: false,
-			errors: {},
-		});
-	}
+  try {
+    await findOneUserByIdAndUpdate(_id, {
+      $pull: {
+        contacts: {
+          contactUserId: contactId,
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+    });
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      errors: {},
+    });
+  }
+}
+
+module.exports = {
+  getContact,
+  postAddContact,
+  deleteContact,
+  onContactList,
 };
